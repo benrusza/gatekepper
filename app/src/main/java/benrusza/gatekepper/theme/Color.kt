@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.theme
+package benrusza.gatekepper.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
-    compileSdk = 34
+    namespace = "benrusza.gatekepper"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
-        minSdk = 24
+        applicationId = "benrusza.gatekepper"
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -48,9 +48,17 @@ android {
         }
     }
 }
+val youtubedlAndroid = "0.18.1"
 
 dependencies {
 
+    // Yt-dlp para Android
+    //implementation("com.github.yausername.youtubedl-android:yt-dlp-android-lib:2024.04.09.1")
+    implementation("io.github.junkfood02.youtubedl-android:library:${youtubedlAndroid}")
+    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:${youtubedlAndroid}")
+    implementation("io.github.junkfood02.youtubedl-android:aria2c:${youtubedlAndroid}")
+
+    
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
