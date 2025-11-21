@@ -11,7 +11,7 @@ GateKeeper is an Android app designed to help you break free from the endless sc
 ## Getting Started
 To get started with GateKeeper, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/GateKeeper.git`
+1. Clone the repository: `git clone https://github.com/benrusza/GateKeeper.git`
 2. Open the project in Android Studio.
 3. Build and install the app on your Android device.
 
