@@ -7,6 +7,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,32 +41,30 @@ class MainActivity : ComponentActivity() {
 
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
 @Preview(showBackground = true)
 @Composable
 fun MyMainView() {
     MyApplicationTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text( "Para poder usar la app es necesario configurar unos ajustes")
-            Spacer(modifier = Modifier.height(16.dp))
-            Text( "En Ajustes → Abrir de forma predeterminada → Abrir enlaces compatibles",)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text( "Ahi selecciona los enlaces que deseas abrir con GateKeeper")
-            Spacer(modifier = Modifier.height(16.dp))
-            OpenAppSettingsButton()
+        // Usamos Scaffold para que aplique el color de fondo del tema
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    // Aplicamos el padding del Scaffold y el nuestro
+                    .padding(innerPadding)
+                    .padding(32.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text( "Para poder usar la app es necesario configurar unos ajustes")
+                Spacer(modifier = Modifier.height(16.dp))
+                Text( "En Ajustes → Abrir de forma predeterminada → Abrir enlaces compatibles",)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text( "Ahi selecciona los enlaces que deseas abrir con GateKeeper")
+                Spacer(modifier = Modifier.height(16.dp))
+                OpenAppSettingsButton()
+            }
         }
     }
 }

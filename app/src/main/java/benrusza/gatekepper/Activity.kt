@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -63,6 +64,11 @@ import java.io.File
 import java.io.InputStream
 import java.nio.charset.Charset
 import androidx.core.net.toUri
+import benrusza.gatekepper.download.Download
+import benrusza.gatekepper.io.DownloadCompletedReceiver
+import benrusza.gatekepper.url.UrlGetterYtDl
+import benrusza.gatekepper.webview.MyWebView
+import benrusza.gatekepper.webview.ReadTextFile
 
 
 object DownloadState {
@@ -79,28 +85,14 @@ object DownloadState {
     }
 }
 
-class DownloadCompletedReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
-            val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
-            if (id != -1L) {
-                Log.d("DownloadReceiver", "Download with ID $id finished!")
-                val filePath = findFileByDownloadId(context, id)?.absolutePath
-                if (filePath != null) {
-                    // Notificamos al StateFlow que la descarga terminó y tenemos la ruta
-                    DownloadState.notifyDownloadComplete(filePath)
-                }
-            }
-        }
-    }
-}
+
 
 class Activity : ComponentActivity() {
 
     companion object {
         var urlToRedirect = ""
         var urlBackup = ""
-        var webView: WebView? = null
+        var webView: MyWebView? = null
     }
 
     private val downloadCompletedReceiver = DownloadCompletedReceiver()
@@ -141,8 +133,7 @@ class Activity : ComponentActivity() {
             enableEdgeToEdge()
             setContent {
                 MyApplicationTheme {
-
-
+                    urlBackup = appLinkData.toString()
                     // Check if the path contains "instagram.com"
                     if (appLinkData.toString().contains("https://www.instagram.com/reel/")) {
                         val part = appLinkData.toString().split("/reel/")
@@ -177,6 +168,9 @@ class Activity : ComponentActivity() {
                         if (appLinkData.toString().contains("/videos/")) {
                             WebViewScreen(appLinkData.toString()+ "?l=1")
                         }
+                    }else{
+                        //https://es.pinterest.com/pin/663084745158577781/
+                        WebViewScreen(appLinkData.toString())
                     }
 
 
@@ -190,6 +184,8 @@ class Activity : ComponentActivity() {
 @Composable
 fun WebViewScreen(url: String = "") {
 
+    val download by lazy { Download() }
+    val getUrlYtDl by lazy { UrlGetterYtDl() }
 
     var isDownloadInitiated by remember { mutableStateOf(false) }
     val downloadedFilePath by DownloadState.downloadCompleteFlow.collectAsState()
@@ -204,201 +200,100 @@ fun WebViewScreen(url: String = "") {
         }
     }
 
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        Box(modifier = Modifier
-            .fillMaxSize()) {
-
-            AndroidView(
-                modifier = Modifier.fillMaxWidth(),
-                factory = { context ->
-                    WebView(context).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        webViewClient = object : android.webkit.WebViewClient() {
-
-                            override fun onPageStarted(
-                                view: WebView?,
-                                url: String?,
-                                favicon: Bitmap?
-                            ) {
-                                super.onPageStarted(view, url, favicon)
-                                isLoading = true
-                                Log.d("WebViewScreen", "Page started loading: $url")
-                            }
-
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView?, request: WebResourceRequest?
-                            ): Boolean {
-                                Log.d("WebViewScreen", "request to: ${request?.url.toString()}")
-                                Log.d("WebViewScreen", "urlToRedirect to: $urlToRedirect")
-                                Log.d("WebViewScreen", "urlBackup to: $urlBackup")
-                                if (urlToRedirect.isNotEmpty()) {
-                                    Log.d("WebViewScreen", "Redirecting to: $urlToRedirect")
-                                    view?.stopLoading()
-                                    view?.loadUrl(urlToRedirect)
-                                }
-                                if (request?.url.toString().contains("/video/")){
-                                    val part = request?.url.toString().split("/video/")
-                                    if (part[1].contains("?")){
-                                        view?.loadUrl("https://www.tiktok.com/embed/v2/" + part[1].split("?")[0])
-
-                                    }else{
-                                        view?.loadUrl("https://www.tiktok.com/embed/v2/" + part[1])
-                                    }
-
-                                }
-                                if (request?.url.toString().contains("www.instagram.com/reel")){
-                                    return false
-                                }
-
-                                if (request?.url.toString().contains("facebook.com")){
-                                    return false
-                                }
-                                Log.d("overrideredirect","true")
-
-                                return true
-                            }
-
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                super.onPageFinished(view, url)
-                                isLoading = false
-
-                                injectJavaScript(view)
-                            }
-
-
-                        }
-                        addJavascriptInterface(JavaScriptInterface(context), "Android")
-                        settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-                            cacheMode = WebSettings.LOAD_DEFAULT
-                            useWideViewPort = true
-                            loadWithOverviewMode = true
-
-
-                        }
-                        loadUrl(url)
-
-                        Activity.webView = this
-                    }
-                }, update = { webView ->
-                    if (webView.url != url) {
-                        webView.loadUrl(url)
-                    }
-                })
-
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center) // Centra el indicador
-                )
-            }
-
-            Column(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
             ) {
-                if (downloadedFilePath != null) {
-                    statusText=""
-                    Button(onClick = { openDownloadedFile(context, downloadedFilePath!!) }) {
-                        Text(text = "Abrir Fichero Descargado")
-                    }
-                }
-                else if (urlToRedirect.isNotEmpty() && !isLoading) {
-                    Button(
-                        onClick = {
-                            isDownloadInitiated = true
-                            startDownload(
-                                context,
-                                urlToRedirect,
-                                "video.mp4"
+
+                AndroidView(
+                    modifier = Modifier.fillMaxWidth(),
+                    factory = { context ->
+                        MyWebView(context, url, isLoading = {
+                            isLoading = it
+                        }).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.WRAP_CONTENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
                             )
-                        },
-                        enabled = !isDownloadInitiated
-                    ) {
-                        Text(text = "Download")
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }else if(!isLoading){
-                    Button(
-                        onClick = {
-                            isDownloadInitiated = true
-                            startYoutubeDLProcess(
-                                scope = scope,
-                                context = context,
-                                urlToProcess = urlBackup,
-                                onStatusUpdate = { newStatus -> statusText = newStatus },
-                            )
-                        },
-                        enabled = !isDownloadInitiated
-                    ) {
-                        Text(text = "Get video with yt-dlp")
-                    }
-                    Spacer(Modifier.height(8.dp))
+
+                            webView = this
+                        }
+                    }, update = { webView ->
+                        if (webView.url != url) {
+                            webView.loadUrl(url)
+                        }
+                    })
+
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center) // Centra el indicador
+                    )
                 }
 
-                if (statusText.isNotEmpty()) {
-                    Text(text = statusText)
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (downloadedFilePath != null) {
+                        statusText = ""
+                        Button(onClick = { openDownloadedFile(context, downloadedFilePath!!) }) {
+                            Text(text = "Abrir Fichero Descargado")
+                        }
+                    } else if (urlToRedirect.isNotEmpty() && !isLoading) {
+                        Button(
+                            onClick = {
+                                isDownloadInitiated = true
+                                download.startDownload(
+                                    context,
+                                    urlToRedirect,
+                                    "video.mp4"
+                                )
+                            },
+                            enabled = !isDownloadInitiated
+                        ) {
+                            Text(text = "Download")
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    } else if (!isLoading) {
+                        Button(
+                            onClick = {
+                                isDownloadInitiated = true
+
+                                scope.launch {
+                                    getUrlYtDl.getUrl(
+                                        context = context,
+                                        urlToProcess = urlBackup,
+                                        onStatusUpdate = { newStatus -> statusText = newStatus },
+                                        result = { ogUrl ->
+                                            download.startDownload(context, ogUrl, "video.mp4")
+                                        }
+                                    )
+                                }
+                            },
+                            enabled = !isDownloadInitiated
+                        ) {
+                            Text(text = "Get video with yt-dlp")
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    if (statusText.isNotEmpty()) {
+                        Text(text = statusText)
+                    }
                 }
+
             }
 
-        }
 
-
-    }
-
-}
-
-
-private fun startYoutubeDLProcess(
-    scope: CoroutineScope,
-    context: Context,
-    urlToProcess: String,
-    onStatusUpdate: (String) -> Unit
-) {
-    scope.launch {
-        if (urlToProcess.isBlank()) {
-            onStatusUpdate("No se encontró una URL válida.")
-            return@launch
-        }
-        onStatusUpdate("Obteniendo información del video...")
-
-
-        val videoInfo: VideoInfo? = try {
-            withContext(Dispatchers.IO) {
-                getInstance().getInfo(urlToProcess)
-            }
-        } catch (e: YoutubeDLException) {
-            e.printStackTrace()
-            onStatusUpdate("Error: ${e.cause?.message ?: e.message}")
-            null
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-            onStatusUpdate("Proceso cancelado.")
-            null
-        }
-            val downloadUrl = videoInfo?.url ?: videoInfo?.formats?.find {
-                it.vcodec != "none" && it.acodec != "none" && it.ext == "mp4"
-        }?.url
-
-        if (!downloadUrl.isNullOrBlank()) {
-            val fileName = (videoInfo?.title ?: "video").replace(Regex("[^a-zA-Z0-9.-]"), "_") + ".mp4"
-
-            Log.d("YTDLP_SUCCESS", "URL encontrada: $downloadUrl")
-            onStatusUpdate("¡URL de descarga obtenida! Iniciando...")
-
-            startDownload(context, downloadUrl, fileName)
-        } else {
-            onStatusUpdate("No se encontró un enlace de video descargable.")
-            Log.e("YTDLP_FAILURE", "videoInfo fue nulo o no se encontró un formato mp4 válido.")
         }
     }
+
 }
 
 private fun openDownloadedFile(context: Context, filePath: String) {
@@ -424,88 +319,9 @@ private fun openDownloadedFile(context: Context, filePath: String) {
     }catch (e: Exception){
         e.printStackTrace()
     }
-
-
-    try {
-
-    } catch (e: Exception) {
-        Log.e("OpenFileError", "No se encontró una aplicación para abrir el video.", e)
-        Toast.makeText(context, "No se encontró una aplicación para abrir videos.", Toast.LENGTH_SHORT).show()
-    }
 }
 
 
-private fun startDownload(context: Context, url: String, fileName: String) {
-    try {
-        val request = DownloadManager.Request(url.toUri())
-            .setTitle(fileName)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-
-        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        downloadManager.enqueue(request)
-        Toast.makeText(context, "Descarga iniciada...", Toast.LENGTH_SHORT).show()
-    } catch (e: Exception) {
-        Toast.makeText(context, "Error al iniciar la descarga.", Toast.LENGTH_LONG).show()
-    }
-}
-
-private fun findFileByDownloadId(context: Context, downloadId: Long): File? {
-    val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-    val query = DownloadManager.Query().setFilterById(downloadId)
-    val cursor = downloadManager.query(query)
-    if (cursor.moveToFirst()) {
-        val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-        if (status == DownloadManager.STATUS_SUCCESSFUL) {
-            val uriString = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
-            if (uriString != null) {
-                return File(uriString.toUri().path!!)
-            }
-        }
-    }
-    return null
-}
-
-
-fun getEmbed(url: String): String {
-    return "<html>" + "<body>" + "<div>$url</div>" + "</body>" + "</html>"
-}
-
-
-fun getHtmlBase(embedCode: String): String {
-    return """
-    <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin:0; padding:0;">
-        $embedCode
-    </body>
-    </html>
-    """
-
-}
-
-fun getHtmlVideo(url: String): String {
-    return """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Your Video Page</title>
-        </head>
-        <body>
-            <iframe
-  width="300"
-  height="200"
-  src="$url">
-</iframe>
-        </body>
-        </html>
-
-    """.trimIndent()
-}
 
 private fun readJsFileFromAssets(context: Context, fileName: String): String {
     return try {
@@ -525,10 +341,9 @@ private fun readJsFileFromAssets(context: Context, fileName: String): String {
 @JavascriptInterface
 fun injectJavaScript(view: WebView?) {
     view?.context?.let { context ->
-        // 1. Lee el contenido del fichero JS
-        val script = readJsFileFromAssets(context, "webview_logic.js")
+        val ReadTextFile = ReadTextFile()
+        val script = ReadTextFile.read(context, "webview_logic.js")
 
-        // 2. Ejecuta el script leído
         if (script.isNotEmpty()) {
             view.evaluateJavascript(script, null)
         }
@@ -538,8 +353,6 @@ fun injectJavaScript(view: WebView?) {
 class JavaScriptInterface(private val context: Context) {
     @JavascriptInterface
     fun logHtml(html: String) {
-        // Logcat tiene un límite de caracteres por línea (aprox. 4000).
-        // Si el HTML es muy largo, lo dividimos en trozos para imprimirlo completo.
         val maxLogSize = 3000
         for (i in 0..html.length / maxLogSize) {
             val start = i * maxLogSize

@@ -35,6 +35,8 @@
                 <data android:host="www.tiktok.com"/>
                 <data android:host="vm.tiktok.com"/>
                 <data android:host="tiktok.com"/>
+                <data android:host="*.pinterest.com"/>
+
             </intent-filter>
         </activity>
         <activity
@@ -50,7 +52,7 @@
         </activity>
 
         <receiver
-            android:name=".DownloadCompletedReceiver"
+            android:name="io.DownloadCompletedReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.app.action.DOWNLOAD_COMPLETE"/>
