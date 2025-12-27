@@ -31,7 +31,7 @@
                 video.style.top = '0';
                 video.style.left = '0';
                 video.style.width = '100vw'; // 100% del ancho de la ventana
-                video.style.height = 'calc(100vh - 120px)';
+                video.style.height = 'calc(100vh - 64px)';
                 video.style.objectFit = 'contain'; // Asegura que se vea completo sin distorsión.
                 video.setAttribute('controls', 'true'); // Forzamos a que muestre los controles.
 

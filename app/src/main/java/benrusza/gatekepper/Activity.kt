@@ -1,20 +1,14 @@
 package benrusza.gatekepper
 
 import android.app.DownloadManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
-import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -45,30 +39,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import benrusza.gatekepper.Activity.Companion.urlBackup
 import benrusza.gatekepper.Activity.Companion.urlToRedirect
 import benrusza.gatekepper.Activity.Companion.webView
-import benrusza.gatekepper.theme.MyApplicationTheme
-import com.yausername.youtubedl_android.YoutubeDL
-import com.yausername.youtubedl_android.YoutubeDL.getInstance
-import com.yausername.youtubedl_android.YoutubeDLException
-import com.yausername.youtubedl_android.YoutubeDLRequest
-import com.yausername.youtubedl_android.mapper.VideoInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.InputStream
-import java.nio.charset.Charset
-import androidx.core.net.toUri
 import benrusza.gatekepper.download.Download
 import benrusza.gatekepper.io.DownloadCompletedReceiver
+import benrusza.gatekepper.theme.MyApplicationTheme
 import benrusza.gatekepper.url.UrlGetterYtDl
 import benrusza.gatekepper.webview.MyWebView
 import benrusza.gatekepper.webview.ReadTextFile
+import kotlinx.coroutines.launch
+import java.io.File
 
 
 object DownloadState {
@@ -98,7 +80,6 @@ class Activity : ComponentActivity() {
     private val downloadCompletedReceiver = DownloadCompletedReceiver()
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -109,6 +90,13 @@ class Activity : ComponentActivity() {
         )
 
         handleIntent(intent)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (downloadCompletedReceiver != null) {
+            unregisterReceiver(downloadCompletedReceiver)
+        }
     }
 
     override fun onDestroy() {
@@ -123,12 +111,22 @@ class Activity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent) {
-        urlToRedirect = ""
-        val appLinkAction = intent.action
-        val appLinkData: Uri? = intent.data
-        if (Intent.ACTION_VIEW == appLinkAction && appLinkData != null) {
-            val path = appLinkData.lastPathSegment
 
+
+
+        urlToRedirect = ""
+        val appLinkData: String? = if( intent.data!=null) {
+            intent.data.toString()
+        }else{
+            intent.getStringExtra("url")
+        }
+
+        Log.d("APP_LINK_DATA", "$appLinkData")
+
+
+        if (appLinkData == null) {
+            return
+        }
 
             enableEdgeToEdge()
             setContent {
@@ -176,7 +174,7 @@ class Activity : ComponentActivity() {
 
                 }
             }
-        }
+
     }
 
 }
@@ -201,6 +199,7 @@ fun WebViewScreen(url: String = "") {
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Spacer(modifier = Modifier.padding(innerPadding))
         Box(modifier = Modifier.fillMaxSize()) {
 
             Box(
@@ -322,22 +321,6 @@ private fun openDownloadedFile(context: Context, filePath: String) {
 }
 
 
-
-private fun readJsFileFromAssets(context: Context, fileName: String): String {
-    return try {
-        val inputStream: InputStream = context.assets.open(fileName)
-        val size: Int = inputStream.available()
-        val buffer = ByteArray(size)
-        inputStream.read(buffer)
-        inputStream.close()
-        String(buffer, Charset.defaultCharset())
-    } catch (e: Exception) {
-        e.printStackTrace()
-        "" // Devuelve una cadena vacía si hay un error
-    }
-}
-
-
 @JavascriptInterface
 fun injectJavaScript(view: WebView?) {
     view?.context?.let { context ->
@@ -386,18 +369,6 @@ class JavaScriptInterface(private val context: Context) {
                     webView?.loadUrl(urlToRedirect)
                 }
             }
-
-        }
-    }
-
-    @JavascriptInterface
-    fun foundWatchOnInstagram(text: String) {
-        Log.d("JavaScriptInterface", "Elemento con clase 'WatchOnInstagram' encontrado. Texto: '$text'")
-
-        // Ejecuta la acción en el hilo principal de la UI
-        (context as? ComponentActivity)?.runOnUiThread {
-            Toast.makeText(context, "Elemento de Instagram detectado!", Toast.LENGTH_LONG).show()
-            webView?.loadUrl(urlBackup);
 
         }
     }

@@ -17,7 +17,6 @@ class DownloadCompletedReceiver : BroadcastReceiver() {
                 Log.d("DownloadReceiver", "Download with ID $id finished!")
                 val filePath = findFileByDownloadId(context, id)?.absolutePath
                 if (filePath != null) {
-                    // Notificamos al StateFlow que la descarga terminó y tenemos la ruta
                     DownloadState.notifyDownloadComplete(filePath)
                 }
             }
