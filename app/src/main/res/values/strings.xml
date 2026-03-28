@@ -1,4 +1,23 @@
 <resources>
-    <string name="app_name">GATEKEEPER</string>
+    <string name="app_name">GateKeeper</string>
     <string name="title_activity_">Anti-DoomScroll</string>
+    <string name="intro_url_placeholder">Enter your URL</string>
+    <string name="paste">Paste</string>
+    <string name="go">Go</string>
+    <string name="settings_needed">To use the app, some settings need to be configured</string>
+    <string name="settings_instructions">In Settings → Open by default → Open supported links (This option might not be present on some Xiaomi phones)</string>
+    <string name="settings_selection">Select the links you want to open with GateKeeper</string>
+    <string name="open_app_settings">Open app settings</string>
+    <string name="open_downloaded_file">Open Downloaded File</string>
+    <string name="download">Download</string>
+    <string name="get_video_ytdlp">Get video with yt-dlp</string>
+    <string name="file_not_found">File not found.</string>
+    <string name="invalid_url">No valid URL found.</string>
+    <string name="getting_video_info">Getting video info...</string>
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="process_cancelled">Process cancelled.</string>
+    <string name="url_obtained">Download URL obtained! Starting...</string>
+    <string name="no_download_link">No downloadable video link found.</string>
+    <string name="download_started">Download started...</string>
+    <string name="download_error">Error starting download.</string>
 </resources>

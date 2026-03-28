@@ -4,7 +4,6 @@ import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
@@ -95,7 +94,12 @@ class Activity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         if (downloadCompletedReceiver != null) {
-            unregisterReceiver(downloadCompletedReceiver)
+            try {
+                unregisterReceiver(downloadCompletedReceiver)
+            }catch (e: Exception){
+                e.printStackTrace()
+            }
+
         }
     }
 
@@ -121,9 +125,6 @@ class Activity : ComponentActivity() {
             intent.getStringExtra("url")
         }
 
-        Log.d("APP_LINK_DATA", "$appLinkData")
-
-
         if (appLinkData == null) {
             return
         }
@@ -131,44 +132,48 @@ class Activity : ComponentActivity() {
             enableEdgeToEdge()
             setContent {
                 MyApplicationTheme {
-                    urlBackup = appLinkData.toString()
+                    urlBackup = appLinkData
                     // Check if the path contains "instagram.com"
-                    if (appLinkData.toString().contains("https://www.instagram.com/reel/")) {
-                        val part = appLinkData.toString().split("/reel/")
+                    if (appLinkData.contains("https://www.instagram.com/reel/")) {
+                        val part = appLinkData.split("/reel/")
                         val part2 = part[1].split("/")
                         if (part2.isNotEmpty()) {
                             urlBackup = part[0] + "/reel/" + part2[0] + "?l=1"
                             WebViewScreen(part[0] + "/reel/" + part2[0]+ "?l=1")
                         } else {
-                            WebViewScreen(appLinkData.toString()+ "?l=1")
+                            WebViewScreen(appLinkData+ "?l=1")
                         }
                         // Check if the path contains "tiktok.com"
-                    } else if (appLinkData.toString().contains("tiktok.com")) {
-                        if (appLinkData.toString().contains("/video/")) {
-                            val part = appLinkData.toString().split("/video/")
+                    } else if (appLinkData.contains("tiktok.com")) {
+                        if (appLinkData.contains("/video/")) {
+                            val part = appLinkData.split("/video/")
                             WebViewScreen("https://www.tiktok.com/embed/v2/" + part[1])
                         } else {
 
-                            WebViewScreen(appLinkData.toString())
+                            WebViewScreen(appLinkData)
                         }
 
                         //https://www.youtube.com/shorts/ejQHMofjH3Q
-                    } else if (appLinkData.toString().contains("youtube.com")) {
+                    } else if (appLinkData.contains("youtube.com")) {
                         //
-                        if (appLinkData.toString().contains("/video/")) {
-                            val part = appLinkData.toString().split("/video/")
+                        if (appLinkData.contains("/video/")) {
+                            val part = appLinkData.split("/video/")
                             WebViewScreen("https://www.tiktok.com/embed/v2/" + part[1])
                         } else {
 
-                            WebViewScreen(appLinkData.toString())
+                            WebViewScreen(appLinkData)
                         }
-                    } else if(appLinkData.toString().contains("https://www.facebook.com")){
-                        if (appLinkData.toString().contains("/videos/")) {
-                            WebViewScreen(appLinkData.toString()+ "?l=1")
+                    } else if(appLinkData.contains("https://www.facebook.com")) {
+                        if (appLinkData.contains("/videos/")) {
+                            WebViewScreen(appLinkData + "?l=1")
                         }
-                    }else{
+
+                    }else if(appLinkData.contains("https://x.com/")){
+                        val part = appLinkData.split("https://x.com/")
+                        WebViewScreen("https://nitter.net/"+part[1]+"#m")
+                    } else{
                         //https://es.pinterest.com/pin/663084745158577781/
-                        WebViewScreen(appLinkData.toString())
+                        WebViewScreen(appLinkData)
                     }
 
 
@@ -242,7 +247,7 @@ fun WebViewScreen(url: String = "") {
                     if (downloadedFilePath != null) {
                         statusText = ""
                         Button(onClick = { openDownloadedFile(context, downloadedFilePath!!) }) {
-                            Text(text = "Abrir Fichero Descargado")
+                            Text(text = stringResource(R.string.open_downloaded_file))
                         }
                     } else if (urlToRedirect.isNotEmpty() && !isLoading) {
                         Button(
@@ -256,7 +261,7 @@ fun WebViewScreen(url: String = "") {
                             },
                             enabled = !isDownloadInitiated
                         ) {
-                            Text(text = "Download")
+                            Text(text = stringResource(R.string.download))
                         }
                         Spacer(Modifier.height(8.dp))
                     } else if (!isLoading) {
@@ -277,7 +282,7 @@ fun WebViewScreen(url: String = "") {
                             },
                             enabled = !isDownloadInitiated
                         ) {
-                            Text(text = "Get video with yt-dlp")
+                            Text(text = stringResource(R.string.get_video_ytdlp))
                         }
                         Spacer(Modifier.height(8.dp))
                     }
@@ -298,7 +303,7 @@ fun WebViewScreen(url: String = "") {
 private fun openDownloadedFile(context: Context, filePath: String) {
     val file = File(filePath)
     Log.d("FILE",filePath)
-    if (!file.exists()) {Toast.makeText(context, "El fichero no se encuentra.", Toast.LENGTH_SHORT).show()
+    if (!file.exists()) {Toast.makeText(context, context.getString(R.string.file_not_found), Toast.LENGTH_SHORT).show()
         return
     }
 
@@ -373,4 +378,3 @@ class JavaScriptInterface(private val context: Context) {
         }
     }
 }
-

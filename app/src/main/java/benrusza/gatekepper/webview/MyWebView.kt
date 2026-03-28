@@ -55,6 +55,10 @@ class MyWebView(context: Context, url: String, var isLoading : (Boolean) -> Unit
                 if (request?.url.toString().contains("facebook.com")) {
                     return false
                 }
+                if (request?.url.toString().contains("nitter.net")) {
+                    return false
+                }
+
                 Log.d("overrideredirect", "true")
 
                 return true

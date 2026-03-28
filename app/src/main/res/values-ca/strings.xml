@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">GateKeeper</string>
+    <string name="title_activity_">Anti-DoomScroll</string>
+    <string name="intro_url_placeholder">Introdueix la teva URL</string>
+    <string name="paste">Enganxar</string>
+    <string name="go">Anar</string>
+    <string name="settings_needed">Per poder utilitzar l\'app és necessari configurar alguns ajustos</string>
+    <string name="settings_instructions">A Ajustos → Obrir de forma predeterminada → Obrir enllaços compatibles (en alguns mòbils com Xiaomi aquesta opció no hi és)</string>
+    <string name="settings_selection">Allà selecciona els enllaços que desitges obrir amb GateKeeper</string>
+    <string name="open_app_settings">Obrir ajustos de l\'app</string>
+    <string name="open_downloaded_file">Obrir fitxer descarregat</string>
+    <string name="download">Descarregar</string>
+    <string name="get_video_ytdlp">Obtenir vídeo amb yt-dlp</string>
+    <string name="file_not_found">El fitxer no s\'ha trobat.</string>
+    <string name="invalid_url">No s\'ha trobat una URL vàlida.</string>
+    <string name="getting_video_info">Obtenint informació del vídeo...</string>
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="process_cancelled">Procés cancel·lat.</string>
+    <string name="url_obtained">URL de descàrrega obtinguda! Iniciant...</string>
+    <string name="no_download_link">No s\'ha trobat cap enllaç de vídeo descarregable.</string>
+    <string name="download_started">Descàrrega iniciada...</string>
+    <string name="download_error">Error en iniciar la descàrrega.</string>
+</resources>

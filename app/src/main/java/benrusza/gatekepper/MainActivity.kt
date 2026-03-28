@@ -7,22 +7,18 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.text
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import benrusza.gatekepper.theme.MyApplicationTheme
@@ -77,14 +73,14 @@ fun MyMainView() {
                         modifier = Modifier.weight(1f),
                         value = text,
                         onValueChange = { text = it },
-                        placeholder = { Text("Introduce tu URL") },
+                        placeholder = { Text(stringResource(R.string.intro_url_placeholder)) },
                         trailingIcon = {
                             TextButton(onClick = {
                                 clipboardManager.getText()?.let {
                                     text = it.text
                                 }
                             }) {
-                                Text("Pegar")
+                                Text(stringResource(R.string.paste))
                             }
                         }
                     )
@@ -99,16 +95,16 @@ fun MyMainView() {
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowForward,
-                            contentDescription = "Ir"
+                            contentDescription = stringResource(R.string.go)
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(64.dp))
-                Text("Para poder usar la app es necesario configurar unos ajustes")
+                Text(stringResource(R.string.settings_needed))
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("En Ajustes → Abrir de forma predeterminada → Abrir enlaces compatibles (En algunos móviles com xiaomi esta opción no esta)")
+                Text(stringResource(R.string.settings_instructions))
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Ahi selecciona los enlaces que deseas abrir con GateKeeper")
+                Text(stringResource(R.string.settings_selection))
                 Spacer(modifier = Modifier.height(16.dp))
                 OpenAppSettingsButton()
             }
@@ -129,6 +125,6 @@ fun OpenAppSettingsButton(modifier: Modifier = Modifier) {
         },
         modifier = modifier
     ) {
-        Text(text = "Abrir ajustes de la app")
+        Text(text = stringResource(R.string.open_app_settings))
     }
 }

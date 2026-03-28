@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Environment
 import android.widget.Toast
 import androidx.core.net.toUri
+import benrusza.gatekepper.R
 
 class Download : IDownload {
     override fun startDownload(
@@ -20,9 +21,9 @@ class Download : IDownload {
 
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)
-            Toast.makeText(context, "Descarga iniciada...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.download_started), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(context, "Error al iniciar la descarga.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.download_error), Toast.LENGTH_LONG).show()
         }
     }
 }

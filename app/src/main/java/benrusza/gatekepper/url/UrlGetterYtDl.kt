@@ -2,6 +2,7 @@ package benrusza.gatekepper.url
 
 import android.content.Context
 import android.util.Log
+import benrusza.gatekepper.R
 import com.yausername.youtubedl_android.YoutubeDL.getInstance
 import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.youtubedl_android.mapper.VideoInfo
@@ -17,10 +18,10 @@ class UrlGetterYtDl : IUrlGetter {
         result: (String) -> Unit
     )  {
         if (urlToProcess.isBlank()) {
-            onStatusUpdate("No se encontró una URL válida.")
+            onStatusUpdate(context.getString(R.string.invalid_url))
             return
         }
-        onStatusUpdate("Obteniendo información del video...")
+        onStatusUpdate(context.getString(R.string.getting_video_info))
 
 
         val videoInfo: VideoInfo? = try {
@@ -29,11 +30,11 @@ class UrlGetterYtDl : IUrlGetter {
             }
         } catch (e: YoutubeDLException) {
             e.printStackTrace()
-            onStatusUpdate("Error: ${e.cause?.message ?: e.message}")
+            onStatusUpdate(context.getString(R.string.error_prefix, e.cause?.message ?: e.message))
             null
         } catch (e: InterruptedException) {
             e.printStackTrace()
-            onStatusUpdate("Proceso cancelado.")
+            onStatusUpdate(context.getString(R.string.process_cancelled))
             null
         }
         val downloadUrl = videoInfo?.url ?: videoInfo?.formats?.find {
@@ -43,12 +44,12 @@ class UrlGetterYtDl : IUrlGetter {
         if (!downloadUrl.isNullOrBlank()) {
 
             Log.d("YTDLP_SUCCESS", "URL encontrada: $downloadUrl")
-            onStatusUpdate("¡URL de descarga obtenida! Iniciando...")
+            onStatusUpdate(context.getString(R.string.url_obtained))
 
             result(downloadUrl)
 
         } else {
-            onStatusUpdate("No se encontró un enlace de video descargable.")
+            onStatusUpdate(context.getString(R.string.no_download_link))
             Log.e("YTDLP_FAILURE", "videoInfo fue nulo o no se encontró un formato mp4 válido.")
             videoInfo?.formats?.forEach {
                 Log.e("YTDLP_FAILURE", "${it?.url} ")
