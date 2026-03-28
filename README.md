@@ -3,6 +3,8 @@
 ## Overview
 GateKeeper is an Android app designed to help you break free from the endless scrolling of algorithmic feeds on proprietary video platforms. With GateKeeper, you can access and watch videos from these platforms in a clean and distraction-free environment, promoting a healthier and more mindful viewing experience.
 
+![Fast explain]("demo images/fast-explain.png")
+
 ## Features
 * **Decouple from algorithmic feeds**: Watch videos without being sucked into endless scrolling and recommendations.
 * **Clean and minimalistic interface**: Focus on the content, not the distractions.
